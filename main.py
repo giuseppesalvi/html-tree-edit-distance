@@ -1,4 +1,4 @@
-from zss import simple_distance, Node
+from zss import simple_distance, Node, distance
 from bs4 import BeautifulSoup
 import re
 
@@ -34,16 +34,23 @@ def create_tree_recursive(bs4node, zssnode):
 def calculate_ted(html1, html2):
     """
     Calculates the Tree Edit Distance (TED) between two HTML documents.
+    All operations cost 1 (insert, remove, update)
 
     Parameters:
     html1, html2 (str): The HTML documents to be compared.
 
     Returns:
-    float: The Tree Edit Distance between the two HTML documents.
+    float: The Tree Edit Distance between the two HTML documents. 
     """
     tree1 = create_tree(html1)
     tree2 = create_tree(html2)
-    return simple_distance(tree1, tree2)
+    #return simple_distance(tree1, tree2)
+    return distance(
+        tree1, tree2, Node.get_children,
+        insert_cost=lambda _: 1,
+        remove_cost=lambda _: 1,
+        update_cost=lambda a, b: 0 if Node.get_label(a) == Node.get_label(b) else 1,
+        return_operations=False)
 
 def extract_html_tree(html):
     """
@@ -81,8 +88,8 @@ def calculate_ted_from_file_paths(file_path_1, file_path_2):
     return calculate_ted(html_1, html_2)
 
 if __name__ == '__main__':
-    file_name_1 = 'examples/test_prediction_cleaned.html'
-    file_name_2 = 'examples/test_original_cleaned.html'
+    file_name_1 = 'examples/rw_0.html'
+    file_name_2 = 'examples/rw_0_modified.html'
 
-    ted = calculate_ted_from_file_paths(file_name_1, file_name_1)
+    ted = calculate_ted_from_file_paths(file_name_1, file_name_2)
     print(f'Html Tree Edit Distance: {ted:.2f}')
