@@ -73,16 +73,16 @@ def calculate_ted_from_file_paths(file_path_1, file_path_2):
     Returns:
     float: The Tree Edit Distance between the two HTML documents.
     """
-    with open(file_name_1, 'r') as f1:
+    with open(file_path_1, 'r') as f1:
         html_1 = extract_html_tree(f1.read())
 
-    with open(file_name_2, 'r') as f2:
+    with open(file_path_2, 'r') as f2:
         html_2 = extract_html_tree(f2.read())
     return calculate_ted(html_1, html_2)
 
 if __name__ == '__main__':
-    file_name_1 = 'examples/rw_0.html'
-    file_name_2 = 'examples/rw_0_modified.html'
+    file_name_1 = 'examples/test_prediction_cleaned.html'
+    file_name_2 = 'examples/test_original_cleaned.html'
 
     ted = calculate_ted_from_file_paths(file_name_1, file_name_1)
     print(f'Html Tree Edit Distance: {ted:.2f}')
