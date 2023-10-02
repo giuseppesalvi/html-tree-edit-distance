@@ -2,6 +2,27 @@ from zss import simple_distance, Node, distance
 from bs4 import BeautifulSoup
 import re
 
+def count_nodes(node):
+    """
+    Recursively count the number of nodes in a tree.
+
+    Parameters:
+    node (Node): The root node of the tree.
+
+    Returns:
+    int: The number of nodes in the tree.
+    """
+    if not node:
+        return 0
+    
+    count = 1  # count the current node
+
+    # recursively count the nodes in the children
+    for child in Node.get_children(node):
+        count += count_nodes(child)
+    
+    return count
+
 def create_tree(html):
     """
     Creates a tree structure from a given HTML document.
@@ -15,7 +36,8 @@ def create_tree(html):
     soup = BeautifulSoup(html, 'html.parser')
     root = Node(soup.name if soup.name else 'root')
     create_tree_recursive(soup, root)
-    return root
+    number_nodes = count_nodes(root)
+    return root, number_nodes
 
 def create_tree_recursive(bs4node, zssnode):
     """
@@ -41,16 +63,19 @@ def calculate_ted(html1, html2):
 
     Returns:
     float: The Tree Edit Distance between the two HTML documents. 
+    float: The Normalized Tree Edit Distance between the two HTML documents, divided by the bigger number of nodes. 
     """
-    tree1 = create_tree(html1)
-    tree2 = create_tree(html2)
+    tree1, nodes1 = create_tree(html1)
+    tree2, nodes2 = create_tree(html2)
     #return simple_distance(tree1, tree2)
-    return distance(
+    d = distance(
         tree1, tree2, Node.get_children,
         insert_cost=lambda _: 1,
         remove_cost=lambda _: 1,
         update_cost=lambda a, b: 0 if Node.get_label(a) == Node.get_label(b) else 1,
         return_operations=False)
+    
+    return d, d / (max(nodes1, nodes2))
 
 def extract_html_tree(html):
     """
@@ -88,8 +113,9 @@ def calculate_ted_from_file_paths(file_path_1, file_path_2):
     return calculate_ted(html_1, html_2)
 
 if __name__ == '__main__':
-    file_name_1 = 'examples/rw_0.html'
-    file_name_2 = 'examples/rw_0_modified.html'
+    file_name_1 = 'examples/rw_8.html'
+    file_name_2 = 'examples/rw_9.html'
 
-    ted = calculate_ted_from_file_paths(file_name_1, file_name_2)
-    print(f'Html Tree Edit Distance: {ted:.2f}')
+    ted, n_ted = calculate_ted_from_file_paths(file_name_1, file_name_2)
+    print(f'Html Tree Edit Distance:            {ted:.2f}')
+    print(f'Normalized Html Tree Edit Distance: {n_ted:.2f}')
